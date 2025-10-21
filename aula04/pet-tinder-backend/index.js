@@ -14,6 +14,8 @@ const pets = [
     {id: 2, nome: "Prea", tipo: "porquinho-india", raca: "generica", nascimento: "2019-08-23"},
 ];
 
+let indicePet = 3;
+
 console.log(" Servidor Backend do Pet-Tinder ");
 
 
@@ -28,8 +30,40 @@ api.get("/pets", (request, response) => {
 });
 
 api.post("/pets", (request, response) => {
-    pets.push( request.data );
+    request.body.id = indicePet++;
+    pets.push( request.body );
     response.json( {status: "ok"} );
+});
+
+api.delete("/pets/:id", (request, response) => {
+    const id = parseInt(request.params.id)
+    const novoPets = pets.filter( ( pet ) => pet.id !== id );
+    if (novoPets.length  == pets.length ) { 
+        response.json( {status: "erro"} );
+    } else { 
+        pets.splice(0, pets.length);
+        pets.push(...novoPets);
+        response.json( {status: "ok"} );
+    }
+});
+
+api.put("/pets/:id", (request, response) => {
+    const id = parseInt(request.params.id);
+    let encontrado = false;
+    for(let i = 0; i < pets.length; i++) { 
+        const pet = pets[i];
+        if (pet.id == id) { 
+            request.body.id = id;
+            pets[i] = request.body
+            encontrado = true;
+            break;
+        }
+    }
+    if (encontrado) { 
+        response.json( {status: "ok"} );
+    } else {
+        response.json( {status: "erro"} );
+    }
 });
 
 api.listen( PORT, ()=>{
