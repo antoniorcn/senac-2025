@@ -4,6 +4,9 @@ import { NavigationContainer } from '@react-navigation/native'
 // import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 import { createDrawerNavigator } from '@react-navigation/drawer';
+import axios, { AxiosResponse } from 'axios';
+
+import {Entypo} from '@expo/vector-icons';
 
 // const {Navigator, Screen} = createBottomTabNavigator();
 const {Navigator, Screen} = createDrawerNavigator();
@@ -20,21 +23,6 @@ interface PetItemProps {
   item : Pet;
   corFundo : string;
 }
-
-const PetItem : React.FC<PetItemProps> = ( props : PetItemProps) => {
-  const {item, corFundo} = props;
-  return ( 
-    <View style={{backgroundColor: corFundo, borderColor: "red",
-      borderWidth: 2, padding: 15, margin: 10, borderRadius: 20}}>
-        <Text>{item.tipo}</Text>
-        <Text>{item.raca}</Text>
-        <Text>{item.nome}</Text>
-        <Text>{item.nascimento}</Text>
-        <Text>{item.peso}</Text>
-      </View>
-  );
-}
-
 
 const Formulario : React.FC<any> = () => {
   const [tipo, setTipo] = useState<string>("");
@@ -69,6 +57,38 @@ const Formulario : React.FC<any> = () => {
   //   ( num ) => { return num * num; }  
   // );
 
+  const carregar = () => { 
+    axios.get("http://localhost:8080/pets")
+    .then( ( resposta )=>{
+      setLista(resposta.data);
+    })
+    .catch( ( err )=>{ alert("Erro ao ler os pets " + err)});
+  }
+
+
+  const PetItem : React.FC<PetItemProps> = ( props : PetItemProps ) => {
+  const {item, corFundo} = props;
+  return ( 
+    <View style={{backgroundColor: corFundo, borderColor: "red",
+      borderWidth: 2, padding: 15, margin: 10, borderRadius: 20}}>
+        <Text>{item.tipo}</Text>
+        <Text>{item.raca}</Text>
+        <Text>{item.nome}</Text>
+        <Text>{item.nascimento}</Text>
+        <Text>{item.peso}</Text>
+        <Entypo name="trash" size={48} color="black" onPress={()=>{
+          axios.delete(`http://localhost:8080/pets/${item.id}`)
+          .then( ()=> {
+            carregar();
+          } )
+          .catch( ()=>{
+            alert("Erro ao apagar o registro");
+          } )
+        }}/>
+      </View>
+  );
+}
+
   const [pagina, setPagina] = useState<string>("FORM");
 
   return (
@@ -96,13 +116,25 @@ const Formulario : React.FC<any> = () => {
                 }}
                 placeholder="Peso:"/>          
               <TouchableHighlight onPress={()=>{
+                axios.post("http://localhost:8080/pets", 
+                  {id: 0, nome, tipo, raca, nascimento})
+                .then( ( resposta : AxiosResponse<any, any> )=>{
+                  console.log("Dados: " + resposta.data );
+                  // Alert.alert("Pet", "Pet salvo com sucesso ", [
+                  //   { text: "OK" }
+                  // ]);
+                  alert("Pet salvo com sucesso");
+                })
+                .catch( ( err : any )=>{
+                  // Alert.alert("Pet", "Erro ao salvar o Pet " + err);
+                  alert("Erro ao salvar o Pet");
+                });
+                // const obj = {tipo, raca, nome, nascimento, peso};
+                // console.log( obj );
 
-                const obj = {tipo, raca, nome, nascimento, peso};
-                console.log( obj );
-
-                setLista( [ ...lista, obj ] );
-                // Alert.alert("Contato", "Contato salvo com sucesso");
-                ToastAndroid.show("Pet Salvo com sucesso", ToastAndroid.LONG);
+                // setLista( [ ...lista, obj ] );
+                // Alert.alert("Pet", "Pet salvo com sucesso");
+                // ToastAndroid.show("Pet Salvo com sucesso", ToastAndroid.LONG);
 
               } }>
                 <View style={estilos.button}>
@@ -115,6 +147,9 @@ const Formulario : React.FC<any> = () => {
           <Screen name="Listagem">
             { ( propsNavigation : any ) =>
               <View style={{flex: 2}}>
+                <Button title="Ler dados" onPress={()=>{
+                    carregar();
+                }}/>
                 <FlatList data={lista} renderItem={PetItem} />
               </View>
             }

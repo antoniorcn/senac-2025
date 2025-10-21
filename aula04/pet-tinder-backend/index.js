@@ -1,7 +1,9 @@
 const PORT = 8080;
 const express = require("express");
+const cors = require("cors");
 const api = express();
 api.use( express.json() );
+api.use( cors() );
 
 const usuarios = [
     {id: 1, username: "user1@teste.com", senha: "123456"},
