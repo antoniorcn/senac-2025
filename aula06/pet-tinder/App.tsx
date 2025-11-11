@@ -1,4 +1,4 @@
-import React, {ReactNode, useState} from 'react';
+import React, {ReactNode, useState, useEffect, useCallback} from 'react';
 import { Image, View, Text, TouchableHighlight, TextInput, Alert, StyleSheet, ToastAndroid, FlatList, Button, ListRenderItemInfo } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -6,8 +6,12 @@ import {Entypo} from '@expo/vector-icons';
 import {launchImageLibraryAsync, requestMediaLibraryPermissionsAsync} from "expo-image-picker"; 
 import { PetControl, usePetControl } from './control/petHook';
 import { Pet } from './model/pet';
+import * as SplashScreen from 'expo-splash-screen';
 
 const {Navigator, Screen} = createBottomTabNavigator();
+
+// Impede que a splash screen se esconda automaticamente
+SplashScreen.preventAutoHideAsync();
 
 interface PetItemProps extends ListRenderItemInfo<Pet> {
   onApagar : ( id : string ) => void;
@@ -15,11 +19,42 @@ interface PetItemProps extends ListRenderItemInfo<Pet> {
 
 const PetView : React.FC<any> = () => {
   const petControl : PetControl = usePetControl();
-  const {message, status} = petControl;
+  const {message, status, acaoCarregar} = petControl;
   const textColor = status == 2? "red" : "green";
+  const [appIsReady, setAppIsReady] = useState(false);
+
+  useEffect(() => {
+    async function prepare() {
+      try {
+        // Adiciona um atraso de 3 segundos para teste
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        // Mantém a splash screen visível enquanto buscamos dados
+        await acaoCarregar();
+      } catch (e) {
+        console.warn(e);
+      } finally {
+        // Informa ao app que ele pode ser renderizado
+        setAppIsReady(true);
+      }
+    }
+
+    prepare();
+  }, []);
+
+  const onLayoutRootView = useCallback(async () => {
+    if (appIsReady) {
+      // Esconde a splash screen quando a view está pronta
+      await SplashScreen.hideAsync();
+    }
+  }, [appIsReady]);
+
+  if (!appIsReady) {
+    return null;
+  }
+
   return(
     <NavigationContainer>
-      <View style={estilos.container}>
+      <View style={estilos.container} onLayout={onLayoutRootView}>
         {(status != 0) && (<Text style={{color: textColor}}>{message}</Text>)}
         <Navigator>
           <Screen name="Formulario" options={{
