@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Pet } from "../model/pet";
 import { apagar, carregar, salvar, mandarImagem, SalvarResponse, ErroCampo } from "../useCases/petUseCases";
 import { launchImageLibraryAsync, requestMediaLibraryPermissionsAsync } from "expo-image-picker";
-import Moment from 'moment';
+import moment from 'moment';
 
 const dateFormat = "DD/MM/YYYY";
 
@@ -56,8 +56,7 @@ const usePetControl = () : PetControl => {
 
     const acaoSalvar = async () => {
         try {
-            // const nascimentoDate : Date = Moment(nascimento).format(dateFormat);
-            const nascimentoDate = new Date();
+            const nascimentoDate = moment(nascimento, dateFormat).toDate();
             const pet : Pet = {idTutor, nome, tipo, raca,
                     nascimento: nascimentoDate, peso: parseFloat(peso)};
             const resultado : SalvarResponse = await salvar( pet );

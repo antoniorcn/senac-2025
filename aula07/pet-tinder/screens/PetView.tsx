@@ -120,7 +120,7 @@ const Formulario : React.FC<any> = (propsNavigation) => {
           <Text style={estilos.buttonText}>Salvar</Text>
         </View>
       </TouchableHighlight>
-      <Button title="Português" onPress={()=>i18n.changeLanguage("pt");} />
+      <Button title="Português" onPress={()=>i18n.changeLanguage("pt")} />
       <Button title="Inglês" onPress={()=>i18n.changeLanguage("en")} />
 
       <Image source={{uri: imagem}} style={{flex: 1}}/>
