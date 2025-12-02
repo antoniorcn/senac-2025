@@ -13,7 +13,7 @@ interface SalvarResponse {
     errosCampos: ErroCampo[];
 }
 
-const salvar = async (pet : Pet) : Promise<SalvarResponse> => {
+const salvar = async (token : string, pet : Pet) : Promise<SalvarResponse> => {
     // PetSchema.validate(pet)
     // .then( ()=>{} )
     // .catch( ()=>{} )
@@ -23,7 +23,7 @@ const salvar = async (pet : Pet) : Promise<SalvarResponse> => {
         const validacao = await PetSchema.validate(pet, {abortEarly: false});
         let salvarStatus = false;
         if (validacao) { 
-            salvarStatus = await salvarApi( pet );
+            salvarStatus = await salvarApi(token, pet );
         }
         const resposta : SalvarResponse = {
             status : salvarStatus ? 1 : 2,
@@ -44,16 +44,16 @@ const salvar = async (pet : Pet) : Promise<SalvarResponse> => {
     }
 }
 
-const carregar = async () : Promise<Pet[]> => { 
-    return carregarApi();
+const carregar = async (token : string) : Promise<Pet[]> => { 
+    return carregarApi( token );
 }
 
-const apagar = async ( id : string ) : Promise<boolean> => { 
-    return apagarApi( id );
+const apagar = async ( token : string, id : string ) : Promise<boolean> => { 
+    return apagarApi( token, id );
 }
 
-const mandarImagem = async (id: number, asset : ImagePickerAsset ) => { 
-    return enviarImagemApi( id, asset );
+const mandarImagem = async (token : string, id: number, asset : ImagePickerAsset ) => { 
+    return enviarImagemApi( token, id, asset );
 }
 
 export { SalvarResponse, ErroCampo, salvar, carregar, apagar, mandarImagem }

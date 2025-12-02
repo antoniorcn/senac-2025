@@ -1,8 +1,7 @@
-import axios, { AxiosResponse } from "axios";
+import axios from "axios";
 import { Pet } from "../model/pet";
 import { ImagePickerAsset } from "expo-image-picker";
-
-const SERVER = "http://127.0.0.1:8080"; 
+import { SERVER } from "./config";
 
 const api = axios.create({
     baseURL: SERVER

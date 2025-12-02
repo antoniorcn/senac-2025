@@ -21,10 +21,19 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.profantonio.pettinder"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "231421dd-04a0-48d7-acb0-c5edc8180431"
+      }
+    },
+    "plugins": [
+      "expo-localization"
+    ]
   }
 }

@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { Pet } from "../model/pet";
 import { apagar, carregar, salvar, mandarImagem, SalvarResponse, ErroCampo } from "../useCases/petUseCases";
 import { launchImageLibraryAsync, requestMediaLibraryPermissionsAsync } from "expo-image-picker";
 import moment from 'moment';
+import { ContextoPrincipal } from "../context/Contexto";
 
 const dateFormat = "DD/MM/YYYY";
 
@@ -38,6 +39,8 @@ const usePetControl = () : PetControl => {
 
     const idTutor = 1;
 
+    const {token} = useContext(ContextoPrincipal);
+
     const [tipo, setTipo] = useState<string>("");
     const [raca, setRaca] = useState<string>("");
     const [nome, setNome] = useState<string>("");
@@ -59,7 +62,7 @@ const usePetControl = () : PetControl => {
             const nascimentoDate = moment(nascimento, dateFormat).toDate();
             const pet : Pet = {idTutor, nome, tipo, raca,
                     nascimento: nascimentoDate, peso: parseFloat(peso)};
-            const resultado : SalvarResponse = await salvar( pet );
+            const resultado : SalvarResponse = await salvar( token, pet );
             console.log("Erros: ", resultado);
             setErrosCampos(resultado.errosCampos);
             setMessage(resultado.message);
@@ -81,7 +84,7 @@ const usePetControl = () : PetControl => {
 
     const acaoCarregar = async () => {
         try {
-            const pets = await carregar();
+            const pets = await carregar( token );
             setLista( pets );
             setMessage("Pets carregados com sucesso");
             setStatus( 1 );
@@ -93,7 +96,7 @@ const usePetControl = () : PetControl => {
 
     const acaoApagar = async (id : string) => {
         try {
-            const response = await apagar( id );
+            const response = await apagar( token, id );
             setMessage("Pet apagado com sucesso");
             setStatus( 1 );
         } catch ( error : any ) { 
@@ -114,7 +117,7 @@ const usePetControl = () : PetControl => {
                 for (const asset of resultado.assets) { 
                     console.log("Asset ==> ", asset);
                     setImagem(asset.uri);
-                    mandarImagem(1, asset );
+                    mandarImagem(token, 1, asset );
                 }
             }
         }

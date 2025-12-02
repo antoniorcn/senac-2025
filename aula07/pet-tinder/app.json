@@ -22,7 +22,12 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.profantonio.pettinder"
+      "package": "com.profantonio.pettinder",
+      "config": { 
+        "googleMaps": { 
+          "apiKey": ""
+        }
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png"

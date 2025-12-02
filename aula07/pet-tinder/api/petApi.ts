@@ -7,23 +7,29 @@ const api = axios.create({
     baseURL: SERVER
 });
 
-const carregarApi = async () : Promise<Pet[]> => { 
-    const response = await api.get("/pets");
+const carregarApi = async (token : string) : Promise<Pet[]> => { 
+    const response = await api.get("/pets", 
+        {headers: {Authorization: "Bearer " + token}}
+    );
     console.log("Pets carregados");
     return response.data;
 }
 
-const apagarApi = async ( id : string ) : Promise<boolean> => {
-    await api.delete(`/pets/${id}`);
+const apagarApi = async (token : string, id : string ) : Promise<boolean> => {
+    await api.delete(`/pets/${id}`, 
+        {headers: {Authorization: "Bearer " + token}}
+    );
     return true;
 }
 
-const salvarApi = async ( pet : Pet )=>{
-    await api.post("/pets", {... pet, id : 0 })
+const salvarApi = async (token : string, pet : Pet )=>{
+    await api.post("/pets", {... pet, id : 0 }, 
+        {headers: {Authorization: "Bearer " + token}}
+    );
     return true;
 }
 
-const enviarImagemApi = async (id: number, asset: ImagePickerAsset) : Promise<boolean> => {
+const enviarImagemApi = async (token : string, id: number, asset: ImagePickerAsset) : Promise<boolean> => {
     const formData = new FormData();
     formData.append("imagem", {
         uri: asset.uri,
@@ -34,7 +40,8 @@ const enviarImagemApi = async (id: number, asset: ImagePickerAsset) : Promise<bo
     const response = await fetch(SERVER + `/pets/upload/${id}`, {
         method: "POST",
         headers: {
-            "Content-Type": "multipart/form-data"
+            "Content-Type": "multipart/form-data",
+            "Authorization": "Bearer " + token
         },
         body: formData
     });

@@ -1,4 +1,5 @@
 interface Pet {
+  idTutor : number;
     id? : number;
   tipo : string;
   raca : string;

@@ -28,6 +28,7 @@ const useUsuarioControl =
 
     const [username, setUsername] = useState<string>("");
     const [password, setPassword] = useState<string>("");
+    const [mapsApiKey, setMapsApiKey] = useState<string>("");
 
     const [message, setMessage] = useState<string>("");
     const [status, setStatus] = useState<number>(0); //0 - sem status,   1 - Ok,    2 - Erro
@@ -37,6 +38,7 @@ const useUsuarioControl =
         try {
             const usuario : Usuario = { email: username, password };
             const tempToken = await signupUseCase( usuario );
+            console.log("Response Body: ", tempToken);
             setToken( tempToken );
             setMessage("Usuario logado com sucesso");
             setStatus( 1 );
@@ -49,10 +51,20 @@ const useUsuarioControl =
     const acaoSignin = async () => {
         try {
             const usuario : Usuario = { email: username, password };
-            const tempToken = await signinUseCase( usuario );
-            setToken( tempToken );
-            setMessage("Usuario logado com sucesso");
-            setStatus( 1 );
+            const responseBody = await signinUseCase( usuario );
+            const mapAk = process.env.EXPO_PUBLIC_MAPSAPIKEY;
+            console.log("Response Body: ", responseBody);
+            console.log("Maps Api Key ==> ", mapAk);
+            setMapsApiKey(mapAk);
+            if (responseBody.token !== undefined) { 
+                setToken( responseBody.token );
+                console.log("Token: ", responseBody.token);
+                setMessage("Usuario logado com sucesso");
+                setStatus( 1 );
+            } else { 
+                throw new Error("Erro ao fazer o login ")
+            }
+            
         } catch ( error : any ) { 
             setMessage(`Erro ao registrar o usuário:  ${error.message}`);
             setStatus( 2 );

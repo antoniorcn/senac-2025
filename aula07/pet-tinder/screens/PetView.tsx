@@ -7,6 +7,9 @@ import {useTranslation} from 'react-i18next';
 import { PetControl, usePetControl } from '../control/petHook';
 import { Pet, PetSchema } from '../model/pet';
 import { estilos } from '../styles/commomStyles';
+import MapView, {Marker} from 'react-native-maps';
+import { PlacesControl, usePlacesControl } from '../control/placesHook';
+import { Place } from '../model/place';
 
 const {Navigator, Screen} = createBottomTabNavigator();
 
@@ -16,6 +19,7 @@ interface PetItemProps extends ListRenderItemInfo<Pet> {
 
 const PetView : React.FC<any> = () => {
   const petControl : PetControl = usePetControl();
+  const placesControl : PlacesControl = usePlacesControl();
   const {message, status} = petControl;
   const textColor = status == 2? "red" : "green";
   return(
@@ -54,6 +58,18 @@ const PetView : React.FC<any> = () => {
         }>
           { ( propsNavigation : any ) => <Matches {...propsNavigation} petControl={petControl}/> }
         </Screen>
+        <Screen name="Map" options={
+          {
+            title: "Map",
+            tabBarIcon : ( iconsProps : {focused : boolean, 
+              color: string, size: number} ) : ReactNode => { 
+                return (<Entypo name="map" 
+                    color={iconsProps.color} size={iconsProps.size}/>);
+            },
+          }
+        }>
+          { ( propsNavigation : any ) => <GoogleMaps {...propsNavigation} placesControl={placesControl}/> }
+        </Screen>        
       </Navigator>
     </View>
   )
@@ -138,6 +154,28 @@ const Listagem : React.FC<any> = ( propsNavigation ) => {
       <Button title="Ler dados" onPress={async ()=>acaoCarregar()}/>
       <FlatList data={lista} renderItem={( itemProps : ListRenderItemInfo<Pet> )=>
         <PetItem {...itemProps} onApagar={acaoApagar}/>} />
+    </View>
+  )
+}
+
+const GoogleMaps : React.FC<any> = ( propsNavigation ) => {
+  const placesControl = propsNavigation.placesControl;
+  const markerVisual = placesControl.places.map( ( plc : Place, indice : number ) => 
+    <Marker key={"MapKey" + indice} title={plc.title}
+            description={plc.description}
+            coordinate={{latitude: plc.latitude, longitude: plc.longitude}}
+  /> );
+  return (
+    <View style={{flex: 1}}>
+      <Button title="Carregar" onPress={async ()=>{placesControl.retrievePlaces()}}/>
+      <MapView style={{flex: 1}} initialRegion={{
+        latitude:-23.66505773581433, 
+        longitude:-46.700587033730386,
+        latitudeDelta: 0.1922,
+        longitudeDelta: 0.1422
+      }}>
+          {markerVisual}
+      </MapView>
     </View>
   )
 }

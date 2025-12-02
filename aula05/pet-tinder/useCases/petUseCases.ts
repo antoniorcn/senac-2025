@@ -1,4 +1,5 @@
-import { apagarApi, carregarApi, salvarApi } from "../api/petApi"
+import { ImagePickerAsset } from "expo-image-picker";
+import { apagarApi, carregarApi, salvarApi, enviarImagemApi } from "../api/petApi"
 import { Pet } from "../model/pet"
 
 const salvar = async (pet : Pet) : Promise<boolean>=> {
@@ -18,4 +19,8 @@ const apagar = async ( id : string ) : Promise<boolean> => {
     return apagarApi( id );
 }
 
-export { salvar, carregar, apagar }
+const mandarImagem = async (id: number, asset : ImagePickerAsset ) => { 
+    return enviarImagemApi( id, asset );
+}
+
+export { salvar, carregar, apagar, mandarImagem }

@@ -1,8 +1,9 @@
 import React, {ReactNode, useState} from 'react';
-import { View, Text, TouchableHighlight, TextInput, Alert, StyleSheet, ToastAndroid, FlatList, Button, ListRenderItemInfo } from 'react-native';
+import { Image, View, Text, TouchableHighlight, TextInput, Alert, StyleSheet, ToastAndroid, FlatList, Button, ListRenderItemInfo } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import {Entypo} from '@expo/vector-icons';
+import {launchImageLibraryAsync, requestMediaLibraryPermissionsAsync} from "expo-image-picker"; 
 import { PetControl, usePetControl } from './control/petHook';
 import { Pet } from './model/pet';
 
@@ -41,6 +42,16 @@ const PetView : React.FC<any> = () => {
             }}>
               { ( propsNavigation : any ) => <Listagem {...propsNavigation} petControl={petControl}/> }
           </Screen>
+          <Screen name="Matches" options={{
+              title: "Matches",
+              tabBarIcon : ( iconsProps : {focused : boolean, 
+                color: string, size: number} ) : ReactNode => { 
+                  return (<Entypo name="heart" 
+                      color={iconsProps.color} size={iconsProps.size}/>);
+              },
+            }}>
+              { ( propsNavigation : any ) => <Matches {...propsNavigation} petControl={petControl}/> }
+          </Screen>
         </Navigator>
       </View>
     </NavigationContainer>
@@ -68,9 +79,9 @@ const PetItem : React.FC<PetItemProps> = ( props : PetItemProps ) => {
 
 const Formulario : React.FC<any> = (propsNavigation) => {
   const {
-    nome, tipo, raca, nascimento, peso,
+    nome, tipo, raca, nascimento, peso, imagem,
     setNome, setTipo, setRaca, setNascimento, setPeso,
-    acaoSalvar
+    acaoSalvar, acaoCarregarImagem
   } = propsNavigation.petControl;
 
   return (
@@ -89,12 +100,14 @@ const Formulario : React.FC<any> = (propsNavigation) => {
         placeholder="Nascimento:" />
       <TextInput style={estilos.input} keyboardType="number-pad"
         value={peso} onChangeText={setPeso}
-        placeholder="Peso:"/>          
+        placeholder="Peso:"/>
+      <Button title="Carregar Imagem" onPress={async ()=>acaoCarregarImagem()} />     
       <TouchableHighlight onPress={async ()=>acaoSalvar()}>
         <View style={estilos.button}>
           <Text style={estilos.buttonText}>Salvar</Text>
         </View>
       </TouchableHighlight>
+      <Image source={{uri: imagem}} style={{flex: 1}}/>
     </View>
   )
 }
@@ -109,6 +122,39 @@ const Listagem : React.FC<any> = ( propsNavigation ) => {
       <Button title="Ler dados" onPress={async ()=>acaoCarregar()}/>
       <FlatList data={lista} renderItem={( itemProps : ListRenderItemInfo<Pet> )=>
         <PetItem {...itemProps} onApagar={acaoApagar}/>} />
+    </View>
+  )
+}
+
+const Matches : React.FC<any> = ( propsNavigation ) => {
+  const {
+    lista, acaoCarregar, acaoApagar
+  } = propsNavigation.petControl;
+
+  const [petIndice, setPetIndice] = useState<number>(0);
+  const [petAtual, setPetAtual] = useState<Pet|null >( lista[petIndice] );
+
+  return (
+    <View style={{flex: 2}}>
+      <Button disabled={petAtual == null} title="Proximo" onPress={async ()=>{
+        console.log(lista);
+        let petIndiceNovo = petIndice + 1;
+        console.log("PetIndiceNovo ==> ", petIndiceNovo);
+        if (petIndiceNovo > lista.length) { 
+          petIndiceNovo = 0;
+        }
+        console.log("lista[petIndiceNovo] ==> ", lista[petIndiceNovo]);
+        setPetAtual(lista[petIndiceNovo]);
+        setPetIndice(petIndiceNovo);
+      }}/>
+      {petAtual ? (
+        <View>
+          <Text>{petAtual.tipo}</Text>
+          <Text>{petAtual.raca}</Text>
+          <Text>{petAtual.nome}</Text>
+          <Text>{petAtual.nascimento}</Text>
+        </View>
+      ): (<><Text>Não há mais pets</Text></>)}
     </View>
   )
 }

@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { Pet } from "../model/pet";
-import { apagar, carregar, salvar, mandarImagem } from "../useCases/petUseCases";
+import { apagar, carregar, salvar, mandarImagem, SalvarResponse, ErroCampo } from "../useCases/petUseCases";
 import { launchImageLibraryAsync, requestMediaLibraryPermissionsAsync } from "expo-image-picker";
+import moment from 'moment';
 
-
+const dateFormat = "DD/MM/YYYY";
 
 interface PetControl { 
     tipo : string;
@@ -15,6 +16,7 @@ interface PetControl {
     lista : Pet[];
     message : string;
     status : number;
+    mostrarErro : ( t : string ) => string | undefined;
     setTipo : ( t : any )=>void;
     setRaca : ( t : any )=>void;
     setNome : ( t : any )=>void;
@@ -48,20 +50,33 @@ const usePetControl = () : PetControl => {
     ]);
 
     const [message, setMessage] = useState<string>("");
+    const [errosCampos, setErrosCampos] = useState<ErroCampo[]>([]);
     const [status, setStatus] = useState<number>(0); //0 - sem status,   1 - Ok,    2 - Erro
 
 
     const acaoSalvar = async () => {
         try {
-            const pet : Pet = {idTutor, nome, tipo, raca, 
-                    nascimento, peso: parseFloat(peso)};
-            await salvar( pet );
-            setMessage("Pet salvo com sucesso");
-            setStatus( 1 );
+            const nascimentoDate = moment(nascimento, dateFormat).toDate();
+            const pet : Pet = {idTutor, nome, tipo, raca,
+                    nascimento: nascimentoDate, peso: parseFloat(peso)};
+            const resultado : SalvarResponse = await salvar( pet );
+            console.log("Erros: ", resultado);
+            setErrosCampos(resultado.errosCampos);
+            setMessage(resultado.message);
+            setStatus(resultado.status);
         } catch ( error : any ) { 
             setMessage(`Erro ao salvar o Pet: ${error.message}`);
             setStatus( 2 );
         }
+    }
+
+    const mostrarErro = ( nomeCampo : string ) : string | undefined => {
+        for (const erroCampo of errosCampos) { 
+            if( erroCampo.field == nomeCampo ) { 
+                return erroCampo.message;
+            }
+        }
+        return undefined;
     }
 
     const acaoCarregar = async () => {
@@ -110,6 +125,7 @@ const usePetControl = () : PetControl => {
         nome, tipo, raca, nascimento, peso, imagem,
         setNome, setTipo, setRaca, setNascimento, setPeso,
         acaoSalvar, acaoCarregar, acaoApagar, acaoCarregarImagem,
+        mostrarErro,
         message, status
     }
 

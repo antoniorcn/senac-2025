@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Pet } from "../model/pet";
-import { apagar, carregar, salvar } from "../useCases/petUseCases";
+import { apagar, carregar, salvar, mandarImagem } from "../useCases/petUseCases";
+import { launchImageLibraryAsync, requestMediaLibraryPermissionsAsync } from "expo-image-picker";
 
 
 
@@ -10,6 +11,7 @@ interface PetControl {
     nome : string;
     nascimento : string;
     peso : string;
+    imagem : string | null;
     lista : Pet[];
     message : string;
     status : number;
@@ -22,19 +24,27 @@ interface PetControl {
     acaoSalvar : () => void;
     acaoCarregar : () => void;
     acaoApagar : (id : string) => void;
+    acaoCarregarImagem : () => void;
 }
 
 
 const usePetControl = () : PetControl => {
+
+    useEffect( ()=> {
+        acaoCarregar();
+    }, [] )
+
+    const idTutor = 1;
 
     const [tipo, setTipo] = useState<string>("");
     const [raca, setRaca] = useState<string>("");
     const [nome, setNome] = useState<string>("");
     const [nascimento, setNascimento] = useState<string>("");
     const [peso, setPeso] = useState<string>("0");
+    const [imagem, setImagem] = useState<string|null>(null);
 
     const [lista, setLista] = useState<Array<any>>([
-        {tipo : "Cachorro", raca: "Vira lata", nome: "Toto", nascimento: "2021-10-20", peso: 15}
+        // {tipo : "Cachorro", raca: "Vira lata", nome: "Toto", nascimento: "2021-10-20", peso: 15}
     ]);
 
     const [message, setMessage] = useState<string>("");
@@ -43,7 +53,7 @@ const usePetControl = () : PetControl => {
 
     const acaoSalvar = async () => {
         try {
-            const pet : Pet = {nome, tipo, raca, 
+            const pet : Pet = {idTutor, nome, tipo, raca, 
                     nascimento, peso: parseFloat(peso)};
             await salvar( pet );
             setMessage("Pet salvo com sucesso");
@@ -77,11 +87,29 @@ const usePetControl = () : PetControl => {
         }
     }
 
+    const acaoCarregarImagem = async () => { 
+        const mediaPermission = await requestMediaLibraryPermissionsAsync()
+        console.log("Permissao ==> ", mediaPermission.granted);
+        if (mediaPermission.granted) { 
+            const resultado = await launchImageLibraryAsync({
+                base64: true,
+                mediaTypes: "images",
+            });
+            if (!resultado.canceled) { 
+                for (const asset of resultado.assets) { 
+                    console.log("Asset ==> ", asset);
+                    setImagem(asset.uri);
+                    mandarImagem(1, asset );
+                }
+            }
+        }
+    }
+
     return {
         lista, setLista,
-        nome, tipo, raca, nascimento, peso,
+        nome, tipo, raca, nascimento, peso, imagem,
         setNome, setTipo, setRaca, setNascimento, setPeso,
-        acaoSalvar, acaoCarregar, acaoApagar,
+        acaoSalvar, acaoCarregar, acaoApagar, acaoCarregarImagem,
         message, status
     }
 

@@ -1,8 +1,11 @@
 import axios, { AxiosResponse } from "axios";
 import { Pet } from "../model/pet";
+import { ImagePickerAsset } from "expo-image-picker";
+
+const SERVER = "http://127.0.0.1:8080"; 
 
 const api = axios.create({
-    baseURL: "http://192.168.68.103:8080"
+    baseURL: SERVER
 });
 
 const carregarApi = async () : Promise<Pet[]> => { 
@@ -21,4 +24,24 @@ const salvarApi = async ( pet : Pet )=>{
     return true;
 }
 
-export {carregarApi, salvarApi, apagarApi};
+const enviarImagemApi = async (id: number, asset: ImagePickerAsset) : Promise<boolean> => {
+    const formData = new FormData();
+    formData.append("imagem", {
+        uri: asset.uri,
+        type: "image/webp",
+        name: "foto.webp"
+    } as any);
+    console.log("Form Data definido ==> ", formData);
+    const response = await fetch(SERVER + `/pets/upload/${id}`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "multipart/form-data"
+        },
+        body: formData
+    });
+    const data = await response.json();
+    console.log("Data ==> ", data);
+    return true;
+}
+
+export {carregarApi, salvarApi, apagarApi, enviarImagemApi};
